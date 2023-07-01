@@ -22,7 +22,7 @@ namespace Logic.ECS.Systems
         public void OnUpdate(ref SystemState state)
         {
             var randomSingleton = SystemAPI.GetSingleton<SingletonRandom>();
-            var teamCounts = new NativeArray<int>(Data.MaxTeamCount, Allocator.Temp);
+            var teamCounts = new NativeArray<int>(Data.MaxTeamCount, state.WorldUpdateAllocator);
             foreach (var team in SystemAPI.Query<TeamDC>())
             {
                 teamCounts[team.Value]++;
@@ -63,8 +63,6 @@ namespace Logic.ECS.Systems
 
                 target.ValueRW = new() {Value = targetEntity};
             }
-
-            teamCounts.Dispose();
         }
     }
 }

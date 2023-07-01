@@ -22,7 +22,8 @@ public class MainMenuUi : MonoBehaviour
             ("Bursted AoS DOD", "BurstedAosDOD"),
             ("DefaultEcs", "DefaultEcs"),
             ("Arch", "Arch"),
-            ("Unity ECS", "Ecs")
+            ("Unity ECS", "Ecs"),
+            ("Svelto ECS", "Svelto")
         };
 
         int y = 340;
