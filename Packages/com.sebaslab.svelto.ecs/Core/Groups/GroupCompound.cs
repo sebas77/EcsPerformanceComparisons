@@ -375,8 +375,8 @@ namespace Svelto.ECS
                         throw new ECSException("Invalid Group Tag declared");
 
                     GroupNamesMap.idToName[group + i] = name;
-#endif
                 }
+#endif
 
                 //The hashname is independent from the actual group ID. this is fundamental because it is want
                 //guarantees the hash to be the same across different machines

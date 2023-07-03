@@ -26,7 +26,7 @@ namespace Logic.SveltoECS
 
                     while (iteration++ < Data.MaxTeamCount - 1) //search for target to attack in a team different than the entity one
                     {
-                        enemyTeamIndex = ((int)(teams[i].Value + enemyTeamIndex)) % Data.MaxTeamCount;
+                        enemyTeamIndex = (int)(teams[i].Value + enemyTeamIndex) % Data.MaxTeamCount;
                         //todo: jumping groups like this is a killer for the cache, it would be wiser to have a better strategy to pick up enemies to minimise the number of queries
                         var (_, entityIDs, enemyTeamCount) = entitiesDB.QueryEntities<TeamDC>(VehicleGroup.BuildGroup + (uint)enemyTeamIndex);
                         if (enemyTeamCount > 0)

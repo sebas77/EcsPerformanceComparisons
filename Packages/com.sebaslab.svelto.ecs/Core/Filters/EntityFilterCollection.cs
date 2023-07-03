@@ -7,6 +7,13 @@ using Svelto.ECS.Native;
 
 namespace Svelto.ECS
 {
+    /// <summary>
+    /// note: the whole Svelto ECS framework is based on the assumption that the NB and MB structures are ref
+    /// since we are holding them inside jobs, we decided to not mark them as ref but the pointers inside must be constant!
+    /// This works because NB and MB data wrapped can be changed only inside a submission which is not jobifiable
+    /// however filters can be modified inside jobs which means that data can change asynchronously. For this reason filters should be
+    /// always queries inside jobs when these are used.
+    /// </summary>
     public readonly struct EntityFilterCollection
     {
         internal EntityFilterCollection(CombinedFilterID combinedFilterId,

@@ -10,7 +10,7 @@ namespace Logic.SveltoECS
         {
             foreach (var ((vehicles, positions, vehiclesCount), _) in entitiesDB.QueryEntities<TargetDC, PositionDC>(VehicleGroup.Groups))
             {
-                for (int i = vehiclesCount - 1; i >= 0; i--)
+                for (int i = 0; i < vehiclesCount; i++)
                 {
                     ref var vehicle = ref vehicles[i];
                     var currentPosition = positions[i].Value;

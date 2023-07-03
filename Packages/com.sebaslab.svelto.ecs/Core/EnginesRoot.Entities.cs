@@ -4,11 +4,51 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Svelto.DataStructures;
+using Svelto.DataStructures.Native;
+using Svelto.ECS.Hybrid;
 using Svelto.ECS.Internal;
+using Svelto.ECS.Native;
 
 namespace Svelto.ECS
 {
-    public partial class EnginesRoot : IDisposable, IUnitTestingInterface
+    public static class EGIDMultiMapperNBExtension
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EGIDMultiMapperNB<T> QueryMappedEntities<T>(this EntitiesDB entitiesDb, LocalFasterReadOnlyList<ExclusiveGroupStruct> groups)
+                where T : unmanaged, _IInternalEntityComponent
+        {
+            var dictionary = new FasterDictionary<ExclusiveGroupStruct, SharedSveltoDictionaryNative<uint, T>>((uint) groups.count);
+        
+            foreach (var group in groups)
+            {
+                entitiesDb.QueryOrCreateEntityDictionary<T>(group, out var typeSafeDictionary);
+                        //if (typeSafeDictionary.count > 0) avoinding this allows these egidmappers to be precreated and stored
+                    dictionary.Add(group, ((UnmanagedTypeSafeDictionary<T>)typeSafeDictionary).implUnmgd);
+            }
+            
+            return new EGIDMultiMapperNB<T>(dictionary);
+        }
+    }
+
+    public static class EGIDMultiMapperMBExtension
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EGIDMultiMapperMB<T> QueryMappedEntities<T>(this EntitiesDB entitiesDb, LocalFasterReadOnlyList<ExclusiveGroupStruct> groups)
+                where T : struct, IEntityViewComponent
+        {
+            var dictionary = new FasterDictionary<ExclusiveGroupStruct, SveltoDictionary<uint, T, ManagedStrategy<SveltoDictionaryNode<uint>>, ManagedStrategy<T>, ManagedStrategy<int>>>((uint) groups.count);
+        
+            foreach (var group in groups)
+            {
+                entitiesDb.QueryOrCreateEntityDictionary<T>(group, out var typeSafeDictionary);
+                dictionary.Add(group, ((ManagedTypeSafeDictionary<T>)typeSafeDictionary).implMgd);
+            }
+            
+            return new EGIDMultiMapperMB<T>(dictionary);
+        }
+    }
+
+    public partial class EnginesRoot: IDisposable, IUnitTestingInterface
     {
         ///--------------------------------------------
         ///
@@ -34,13 +74,15 @@ namespace Svelto.ECS
         {
             CheckAddEntityID(entityID, descriptorType, caller);
 
-            DBC.ECS.Check.Require(entityID.groupID.isInvalid == false,
+            DBC.ECS.Check.Require(
+                entityID.groupID.isInvalid == false,
                 "invalid group detected, are you using new ExclusiveGroupStruct() instead of new ExclusiveGroup()?");
 
             var reference = _entityLocator.ClaimReference();
             _entityLocator.SetReference(reference, entityID);
 
-            var dic = EntityFactory.BuildGroupedEntities(entityID, _groupedEntityToAdd, componentsToBuild, implementors
+            var dic = EntityFactory.BuildGroupedEntities(
+                entityID, _groupedEntityToAdd, componentsToBuild, implementors
 #if DEBUG && !PROFILE_SVELTO
               , descriptorType
 #endif
@@ -52,7 +94,7 @@ namespace Svelto.ECS
         /// <summary>
         /// Preallocate memory to avoid the impact to resize arrays when many entities are submitted at once
         /// </summary>
-        void Preallocate(ExclusiveGroupStruct groupID, uint size, IComponentBuilder[] entityComponentsToBuild)
+        internal void Preallocate(ExclusiveGroupStruct groupID, uint size, IComponentBuilder[] entityComponentsToBuild)
         {
             void PreallocateEntitiesToAdd()
             {
@@ -67,14 +109,14 @@ namespace Svelto.ECS
                 for (var index = 0; index < numberOfEntityComponents; index++)
                 {
                     var entityComponentBuilder = entityComponentsToBuild[index];
-                    var entityComponentType    = entityComponentBuilder.getComponentID;
+                    var entityComponentType = entityComponentBuilder.getComponentID;
 
-                    var dbList     = group.GetOrAdd(entityComponentType, () => entityComponentBuilder.CreateDictionary(size));
+                    var dbList = group.GetOrAdd(entityComponentType, () => entityComponentBuilder.CreateDictionary(size));
                     entityComponentBuilder.Preallocate(dbList, size);
 
                     if (_groupsPerEntity.TryGetValue(entityComponentType, out var groupedGroup) == false)
                         groupedGroup = _groupsPerEntity[entityComponentType] =
-                            new FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary>();
+                                new FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary>();
 
                     groupedGroup[groupID] = dbList;
                 }
@@ -88,7 +130,8 @@ namespace Svelto.ECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         FasterDictionary<ComponentID, ITypeSafeDictionary> GetDBGroup(ExclusiveGroupStruct fromIdGroupId)
         {
-            if (_groupEntityComponentsDB.TryGetValue(fromIdGroupId,
+            if (_groupEntityComponentsDB.TryGetValue(
+                    fromIdGroupId,
                     out FasterDictionary<ComponentID, ITypeSafeDictionary> fromGroup) == false)
                 throw new ECSException("Group doesn't exist: ".FastConcat(fromIdGroupId.ToName()));
 
@@ -98,7 +141,8 @@ namespace Svelto.ECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         FasterDictionary<ComponentID, ITypeSafeDictionary> GetOrAddDBGroup(ExclusiveGroupStruct toGroupId)
         {
-            return _groupEntityComponentsDB.GetOrAdd(toGroupId,
+            return _groupEntityComponentsDB.GetOrAdd(
+                toGroupId,
                 () => new FasterDictionary<ComponentID, ITypeSafeDictionary>());
         }
 
@@ -106,9 +150,11 @@ namespace Svelto.ECS
         {
             var fromGroup = GetDBGroup(fromEntityGID.groupID);
 
-            if (fromGroup.TryGetValue(ComponentBuilderUtilities.ENTITY_INFO_COMPONENT_ID,
+            if (fromGroup.TryGetValue(
+                    ComponentBuilderUtilities.ENTITY_INFO_COMPONENT_ID,
                     out var entityInfoDic) //<entity ID, EntityInfoComponent>
-             && ((ITypeSafeDictionary<EntityInfoComponent>)entityInfoDic).TryGetValue(fromEntityGID.entityID,
+             && ((ITypeSafeDictionary<EntityInfoComponent>)entityInfoDic).TryGetValue(
+                    fromEntityGID.entityID,
                     out var entityInfo)) //there could be multiple entity descriptors registered in the same group, so it's necessary to check if the entity registered in the group has entityInfoComponent   
             {
 #if PARANOID_CHECK
@@ -135,9 +181,11 @@ namespace Svelto.ECS
         {
             var fromGroup = GetDBGroup(fromEntityGID.groupID);
 
-            if (fromGroup.TryGetValue(ComponentBuilderUtilities.ENTITY_INFO_COMPONENT_ID,
+            if (fromGroup.TryGetValue(
+                    ComponentBuilderUtilities.ENTITY_INFO_COMPONENT_ID,
                     out var entityInfoDic) //<entity ID, EntityInfoComponent>
-             && ((ITypeSafeDictionary<EntityInfoComponent>)entityInfoDic).TryGetValue(fromEntityGID.entityID,
+             && ((ITypeSafeDictionary<EntityInfoComponent>)entityInfoDic).TryGetValue(
+                    fromEntityGID.entityID,
                     out var entityInfo)) //there could be multiple entity descriptors registered in the same group, so it's necessary to check if the entity registered in the group has entityInfoComponent   
             {
 #if PARANOID_CHECK
@@ -168,14 +216,14 @@ namespace Svelto.ECS
         //for each group id, save a dictionary indexed by entity type of entities indexed by id
         //                                        group                  EntityComponentType     entityID, EntityComponent
         internal readonly FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, ITypeSafeDictionary>>
-            _groupEntityComponentsDB;
+                _groupEntityComponentsDB;
 
         //for each entity view type, return the groups (dictionary of entities indexed by entity id) where they are
         //found indexed by group id. TypeSafeDictionary are never created, they instead point to the ones hold
         //by _groupEntityComponentsDB
         //                        <EntityComponentType                            <groupID  <entityID, EntityComponent>>>
         internal readonly FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary>>
-            _groupsPerEntity;
+                _groupsPerEntity;
 #if SVELTO_LEGACY_FILTERS
         //The filters stored for each component and group
         internal readonly FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, LegacyGroupFilters>>

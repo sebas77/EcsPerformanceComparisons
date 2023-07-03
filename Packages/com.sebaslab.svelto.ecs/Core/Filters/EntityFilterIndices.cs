@@ -4,7 +4,8 @@ using Svelto.DataStructures;
 
 namespace Svelto.ECS
 {
-    public struct EntityFilterIndices
+    //these are not meant to be held or passed by paramater.
+    public ref struct EntityFilterIndices
     {
         public EntityFilterIndices(NB<uint> indices, uint count)
         {

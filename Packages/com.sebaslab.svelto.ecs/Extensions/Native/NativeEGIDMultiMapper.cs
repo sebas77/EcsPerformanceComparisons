@@ -13,6 +13,8 @@ namespace Svelto.ECS.Native
     ///WARNING: REMEMBER THIS MUST BE DISPOSED OF, AS IT USES NATIVE MEMORY. IT WILL LEAK MEMORY OTHERWISE
     ///
     /// to retrieve a NativeEGIDMultiMapper use entitiesDB.QueryNativeMappedEntities<T>(groups, Svelto.Common.Allocator.TempJob);
+    ///
+    /// TODO: this could be extended to support all the query interfaces so that NB can become ref and this used to query entities inside jobs
     /// 
     /// </summary>
     public struct NativeEGIDMultiMapper<T> : IDisposable where T : unmanaged, _IInternalEntityComponent

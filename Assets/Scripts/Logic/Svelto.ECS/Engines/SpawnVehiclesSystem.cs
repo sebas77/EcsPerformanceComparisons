@@ -32,7 +32,7 @@ namespace Logic.SveltoECS
                     break;
                 }
 
-                var egid = new EGID((uint)aliveCount, VehicleGroup.BuildGroup + i);
+                var egid = new EGID((uint)Count++, VehicleGroup.BuildGroup + i);
                 var init = _entityFactory.BuildEntity<VehicleDescriptor>(egid);
 
                 init.Init(
@@ -63,5 +63,7 @@ namespace Logic.SveltoECS
         public string name => nameof(SpawnVehiclesSystem);
 
         readonly IEntityFactory _entityFactory;
+        
+        static int Count = 0;
     }
 };

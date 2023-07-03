@@ -31,7 +31,7 @@ namespace Svelto.ECS
                 dictionary.GetDirectValueByRef(findElementIndex) = initializer;
         }
 
-        internal ref T GetOrAdd<T>() where T : struct, _IInternalEntityComponent
+        internal ref T GetOrAdd<T>() where T : unmanaged, _IInternalEntityComponent
         {
             ref var entityDictionary = ref _group.GetOrAdd(ComponentTypeID<T>.id, () => new UnmanagedTypeSafeDictionary<T>(1));
             
@@ -47,9 +47,7 @@ namespace Svelto.ECS
 
         public bool Has<T>() where T : struct, _IInternalEntityComponent
         {
-            if (_group.TryGetValue(
-                    ComponentTypeID<T>.id,
-                    out var typeSafeDictionary))
+            if (_group.TryGetValue(ComponentTypeID<T>.id, out var typeSafeDictionary))
             {
                 var dictionary = (ITypeSafeDictionary<T>)typeSafeDictionary;
 
