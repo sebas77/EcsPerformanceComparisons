@@ -70,7 +70,7 @@ namespace Svelto.ECS
 #endif
             return group._group + b;
         }
-
+        
         public uint id => _group.id;
 
         //todo document the use case for this method. I may honestly set this as a deprecated as it's original scenario is probably not valid anymore

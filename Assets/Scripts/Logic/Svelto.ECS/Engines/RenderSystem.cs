@@ -1,13 +1,15 @@
 using System;
+using System.Runtime.CompilerServices;
+using Svelto.DataStructures;
 using Svelto.ECS;
 using UnityEngine;
 
 namespace Logic.SveltoECS
 {
-    public class RenderSystem: IQueryingEntitiesEngine, IStepEngine<float>
+    public class RenderSystem: IQueryingEntitiesEngine, IStepEngine<float>, IDisposable
     {
-        private static Transform[] transformPool = new Transform[Data.MaxVehicleCount];
-        private static MeshRenderer[] meshPool = new MeshRenderer[Data.MaxVehicleCount];
+        static Transform[] transformPool = new Transform[Data.MaxVehicleCount];
+        static MeshRenderer[] meshPool = new MeshRenderer[Data.MaxVehicleCount];
 
         public RenderSystem(GameObject prefab, Material[] materials, Material sirenLightMaterial)
         {
@@ -15,12 +17,9 @@ namespace Logic.SveltoECS
             _materials = materials;
             _sirenLightMaterial = sirenLightMaterial;
 
-         //   colorfulEntitiesSet = world.GetEntities().With<PositionDC>().Without<SirenLight>().AsSet();
-          //  sirenLightEntitiesSet = world.GetEntities().With<PositionDC>().With<SirenLight>().AsSet();
-
             Initialize();
         }
-        
+
         public void Initialize()
         {
             for (var i = 0; i < transformPool.Length; i++)
@@ -30,7 +29,7 @@ namespace Logic.SveltoECS
             }
         }
 
-        public void Clear()
+        public void Dispose()
         {
             for (var i = 0; i < transformPool.Length; i++)
             {
@@ -38,57 +37,69 @@ namespace Logic.SveltoECS
             }
         }
 
-        public void Step(in float _param)
+        public void Step(in float time)
         {
-//            var colorfulEntities = colorfulEntitiesSet.GetEntities();
-//            var colorfulEntitiesLength = colorfulEntities.Length;
-//
-//            var sirenLightEntities = sirenLightEntitiesSet.GetEntities();
-//
-//            UpdateVehicleColors(colorfulEntities, false, 0);
-//            UpdateVehicleColors(sirenLightEntities, true, colorfulEntitiesLength);
-//
-//            var entitiesCount = colorfulEntities.Length + sirenLightEntities.Length;
-//            for (var i = entitiesCount; i < Data.MaxVehicleCount; i++)
-//            {
-//                meshPool[i].enabled = false;
-//            }
+            int entitiesCount = 0;
+            foreach (var ((colorfulEntities, colorfulEntitiesLength), group) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOff.Groups))
+            {
+                UpdateVehicleColors(colorfulEntities, entitiesCount, colorfulEntitiesLength, VehicleSirenOff.Offset(group));
+
+                entitiesCount += colorfulEntitiesLength;
+            }
+            
+            foreach (var ((colorfulEntities, colorfulEntitiesLength), _) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOn.Groups))
+            {
+                UpdateSirenVehicleColors(colorfulEntities, entitiesCount, colorfulEntitiesLength);
+
+                entitiesCount += colorfulEntitiesLength;
+            }
+
+            for (var i = entitiesCount; i < Data.MaxVehicleCount; i++)
+            {
+                meshPool[i].enabled = false;
+            }
         }
 
-//        private void UpdateVehicleColors(ReadOnlySpan<Entity> entities, bool sirenLightLit, int poolStartIndex)
-//        {
-//            for (var i = 0; i < entities.Length; i++)
-//            {
-//                int poolIndex = poolStartIndex + i;
-//
-//                var position = entities[i].Get<PositionDC>().Value;
-//                transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
-//                meshPool[poolIndex].enabled = true;
-//
-//                if (sirenLightLit)
-//                {
-//                    // TODO: Light intensity
-//                    meshPool[poolIndex].material = sirenLightMaterial;
-//                }
-//                else
-//                {
-//                    meshPool[poolIndex].material = materials[entities[i].Get<TeamDC>().Value];
-//                }
-//            }
-//        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void UpdateVehicleColors(NB<PositionDC> entities, int poolIndexCount, int entitiesLength, uint teamIndex)
+        {
+            for (var i = 0; i < entitiesLength; i++)
+            {
+                int poolIndex = poolIndexCount + i;
 
-        public void Dispose()
-        {}
+                ref var position = ref entities[i].Value;
+                transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
+                meshPool[poolIndex].enabled = true;
+                meshPool[poolIndex].material = _materials[teamIndex];
+            }
+        }
 
-        public void Ready()
-        { }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void UpdateSirenVehicleColors(NB<PositionDC> entities, int poolIndexCount, int entitiesLength)
+        {
+            for (var i = 0; i < entitiesLength; i++)
+            {
+                int poolIndex = poolIndexCount + i;
+
+                ref var position = ref entities[i].Value;
+                if (poolIndex >= Data.MaxVehicleCount)
+                {
+                    throw new Exception("poolIndex >= Data.MaxVehicleCount");
+                }
+                transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
+                meshPool[poolIndex].enabled = true;
+                meshPool[poolIndex].material = _sirenLightMaterial;
+            }
+        }
+
+        public void Ready() { }
 
         public EntitiesDB entitiesDB { get; set; }
 
         public string name => nameof(RenderSystem);
-        
-        private readonly GameObject _prefab;
-        private readonly Material[] _materials;
-        private readonly Material _sirenLightMaterial;
+
+        readonly GameObject _prefab;
+        readonly Material[] _materials;
+        readonly Material _sirenLightMaterial;
     }
 }

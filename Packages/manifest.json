@@ -1,16 +1,18 @@
 {
   "dependencies": {
+    "com.james-frowen.simplewebtransport": "1.6.3",
+    "com.meryel.code-analysis-3-11": "https://github.com/merryyellow/code-analysis-3-11.git",
     "com.tayx.graphy": "https://github.com/Tayx94/graphy.git",
-    "com.unity.collab-proxy": "2.0.4",
+    "com.unity.collab-proxy": "2.0.5",
     "com.unity.collections": "2.1.0-pre.6",
     "com.unity.entities": "1.0.8",
     "com.unity.ide.rider": "3.0.24",
     "com.unity.ide.visualstudio": "2.0.18",
-    "com.unity.ide.vscode": "1.2.5",
-    "com.unity.render-pipelines.universal": "14.0.8",
-    "com.unity.test-framework": "1.1.33",
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.unity.render-pipelines.universal": "15.0.6",
+    "com.unity.test-framework": "1.3.7",
     "com.unity.textmeshpro": "3.0.6",
-    "com.unity.timeline": "1.7.4",
+    "com.unity.timeline": "1.8.4",
     "com.unity.ugui": "1.0.0",
     "com.unity.visualscripting": "1.8.0",
     "com.unity.modules.ai": "1.0.0",
@@ -50,7 +52,8 @@
       "name": "OpenUPM",
       "url": "https://package.openupm.com",
       "scopes": [
-        "org.nuget.system.runtime.compilerservices.unsafe"
+        "org.nuget.system.runtime.compilerservices.unsafe",
+        "com.james-frowen"
       ]
     }
   ]

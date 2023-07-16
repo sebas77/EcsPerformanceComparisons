@@ -84,7 +84,7 @@ namespace Svelto.ECS
             _instancedSequence = engines;
         }
 
-        public void Step(in Parameter param)
+        public void Step(in Parameter time)
         {
             using (var profiler = new PlatformProfiler(_name))
             {
@@ -92,7 +92,7 @@ namespace Svelto.ECS
                 for (var index = 0; index < instancedSequenceCount; index++)
                 {
                     var engine = _instancedSequence[index];
-                    using (profiler.Sample(engine.name)) engine.Step(param);
+                    using (profiler.Sample(engine.name)) engine.Step(time);
                 }
             }
         }

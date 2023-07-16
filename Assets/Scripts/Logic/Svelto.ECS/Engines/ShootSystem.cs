@@ -6,9 +6,9 @@ namespace Logic.SveltoECS
 {
     public class ShootSystem: IQueryingEntitiesEngine, IStepEngine<float>
     {
-        public void Step(in float deltaTime)
+        public void Step(in float time)
         {
-            foreach (var ((vehicles, positions, vehiclesCount), _) in entitiesDB.QueryEntities<TargetDC, PositionDC>(VehicleGroup.Groups))
+            foreach (var ((vehicles, positions, vehiclesCount), _) in entitiesDB.QueryEntities<TargetDC, PositionDC>(VehicleTag.Groups))
             {
                 for (int i = 0; i < vehiclesCount; i++)
                 {
@@ -23,7 +23,7 @@ namespace Logic.SveltoECS
                         {
                             (NB<HealthDC> targetHealths, _) = entitiesDB.QueryEntities<HealthDC>(targetEGID.groupID);
 
-                            targetHealths[index].Value -= (Data.WeaponDamage * deltaTime);
+                            targetHealths[index].Value -= (Data.WeaponDamage * time);
                         }
                     }
                 }

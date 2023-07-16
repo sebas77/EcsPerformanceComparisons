@@ -17,22 +17,17 @@ namespace Logic.SveltoECS
             _entityFactory = entityFactory;
         }
 
-        public void Step(in float deltaTime)
+        public void Step(in float time)
         {
-            QueryGroups query = new QueryGroups(VehicleGroup.Groups);
-            var aliveCount = query.Evaluate().Count<TeamDC>(entitiesDB);
-
             var maxTeamCount = Data.MaxTeamCount;
-            var maxVehicleCount = Data.MaxVehicleCount;
+            var maxVehicleCount = math.floor((float)Data.MaxVehicleCount / (float)Data.MaxTeamCount);
 
             for (uint i = 0; i < maxTeamCount; i++)
             {
-                if (aliveCount == maxVehicleCount)
-                {
-                    break;
-                }
-
-                var egid = new EGID((uint)Count++, VehicleGroup.BuildGroup + i);
+                if (entitiesDB.Count<TeamDC>(VehicleSirenOff.BuildGroup + i) >= maxVehicleCount)
+                    continue;
+                
+                var egid = new EGID((uint)Count++, VehicleSirenOff.BuildGroup + i);
                 var init = _entityFactory.BuildEntity<VehicleDescriptor>(egid);
 
                 init.Init(
@@ -43,15 +38,13 @@ namespace Logic.SveltoECS
                 init.Init(
                     new PositionDC
                     {
-                        Value = new float2(Random.Range(0, 100), Random.Range(0, 100))
+                        Value = new float2(Random.Range(0.0f, 100.0f), Random.Range(0.0f, 100.0f))
                     });
                 init.Init(
                     new HealthDC
                     {
                         Value = 100
                     });
-
-                aliveCount++;
             }
         }
 

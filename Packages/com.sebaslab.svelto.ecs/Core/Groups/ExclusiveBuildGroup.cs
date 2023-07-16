@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Svelto.ECS
 {
     public readonly struct ExclusiveBuildGroup
@@ -5,12 +7,6 @@ namespace Svelto.ECS
         internal ExclusiveBuildGroup(ExclusiveGroupStruct group, ushort range)
         {
             _range = range;
-            this.group = group;
-        }
-        
-        internal ExclusiveBuildGroup(ExclusiveGroupStruct group)
-        {
-            _range = 0;
             this.group = group;
         }
 
@@ -31,7 +27,7 @@ namespace Svelto.ECS
         
         public static ExclusiveGroupStruct operator +(ExclusiveBuildGroup c1, uint c2)
         {
-            DBC.ECS.Check.Require(c2 < c1._range, "group out of range");
+            DBC.ECS.Check.Require(c2 < c1._range, $"group out of range, {c2} max range is {c1._range}");
             
             return c1.group + c2;
         }
@@ -41,9 +37,18 @@ namespace Svelto.ECS
             return group.ToName();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal uint Offset(ExclusiveGroupStruct exclusiveGroupStruct)
+        {
+            DBC.ECS.Check.Require((exclusiveGroupStruct.id - group.id) < _range, "group out of range");
+            var offset = (uint)exclusiveGroupStruct.id - (uint)group.id;
+            return offset;
+        }
+
         internal ExclusiveGroupStruct @group    { get; }
+
         readonly ushort _range;
-        
+
         public   bool                 isInvalid => group == ExclusiveGroupStruct.Invalid;
     }
 }

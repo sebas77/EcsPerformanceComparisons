@@ -5,9 +5,9 @@ namespace Logic.SveltoECS
 {
     public class VehicleMovementSystem : IQueryingEntitiesEngine, IStepEngine<float>
     {
-        public void Step(in float deltaTime)
+        public void Step(in float time)
         {
-            foreach (var ((vehicles, positions, count), _) in entitiesDB.QueryEntities<TargetDC, PositionDC>(VehicleGroup.Groups))
+            foreach (var ((vehicles, positions, count), _) in entitiesDB.QueryEntities<TargetDC, PositionDC>(VehicleTag.Groups))
             {
                 for (int i = 0; i < count; i++)
                 {
@@ -16,14 +16,16 @@ namespace Logic.SveltoECS
                     {
                         ref var position = ref positions[i];
                         float2 currentPosition = position.Value;
-                        //todo: querying entities inside a loop like this is a killer for cache.
+                        //todo: querying entities inside a loop like this is a killer for cache performance.
                         float2 targetPosition = _mapped.Entity(egid).Value;
 
                         if (math.distance(currentPosition, targetPosition) < DefaultECS.Data.WeaponRange)
                             continue;
+                        
+                      //  Debug.Log($"Moving {vehicle} from {currentPosition} to {targetPosition} target {egid}");
 
                         var direction = math.normalize(targetPosition - currentPosition);
-                        var newPosition = currentPosition + direction * Data.VehicleSpeed * deltaTime;
+                        var newPosition = currentPosition + direction * Data.VehicleSpeed * time;
                         position.Value = newPosition;
                     }
                 }
@@ -32,7 +34,7 @@ namespace Logic.SveltoECS
 
         public void Ready()
         {
-            _mapped = entitiesDB.QueryMappedEntities<PositionDC>(VehicleGroup.Groups);
+            _mapped = entitiesDB.QueryMappedEntities<PositionDC>(VehicleTag.Groups);
         }
 
         public EntitiesDB entitiesDB { get; set; }

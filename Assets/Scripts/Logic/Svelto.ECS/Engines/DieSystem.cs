@@ -9,9 +9,9 @@ namespace Logic.SveltoECS
             _functions = functions;
         }
 
-        public void Step(in float _param)
+        public void Step(in float time)
         {
-            foreach (var ((entities, ids, aliveCount), group) in entitiesDB.QueryEntities<HealthDC>(VehicleGroup.Groups))
+            foreach (var ((entities, ids, aliveCount), group) in entitiesDB.QueryEntities<HealthDC>(VehicleTag.Groups))
             {
                 for (int i = 0; i < aliveCount; ++i)
                 {
@@ -20,9 +20,6 @@ namespace Logic.SveltoECS
                 }
             }
         }
-
-        public void Dispose()
-        { }
 
         public void Ready()
         { }

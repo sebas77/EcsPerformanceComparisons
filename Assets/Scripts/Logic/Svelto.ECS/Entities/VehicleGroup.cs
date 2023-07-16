@@ -2,11 +2,22 @@
 
 namespace Logic.SveltoECS
 {
-    public class VehicleGroup:GroupTag<VehicleGroup>
+    public sealed class VehicleSirenOn: GroupCompound<VehicleTag, SirenTag> { }
+    public sealed class VehicleSirenOff: GroupCompound<VehicleTag, WithoutSirenTag> { }
+    
+    public sealed class SirenTag: GroupTag<SirenTag> { }
+    public sealed class WithoutSirenTag: GroupTag<WithoutSirenTag> { }
+    
+    public sealed class VehicleTag: GroupTag<VehicleTag> 
     {
-        static VehicleGroup()
+        static VehicleTag()
         {
             range = (ushort)Data.MaxTeamCount;
         }
+    }
+
+    public static class ExclusiveGroups
+    {
+        public static ExclusiveGroup TimeGroup = new ExclusiveGroup();
     }
 }

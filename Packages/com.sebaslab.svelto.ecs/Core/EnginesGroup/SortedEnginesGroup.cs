@@ -104,7 +104,7 @@ namespace Svelto.ECS
             _instancedSequence = new Sequence<Interface, SequenceOrder>(engines);
         }
 
-        public void Step(in Parameter param)
+        public void Step(in Parameter time)
         {
             var sequenceItems = _instancedSequence.items;
             using (var profiler = new PlatformProfiler(_name))
@@ -112,7 +112,7 @@ namespace Svelto.ECS
                 for (var index = 0; index < sequenceItems.count; index++)
                 {
                     var engine = sequenceItems[index];
-                    using (profiler.Sample(engine.name)) engine.Step(param);
+                    using (profiler.Sample(engine.name)) engine.Step(time);
                 }
             }
         }

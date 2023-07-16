@@ -2,7 +2,7 @@
 
 namespace Logic.SveltoECS
 {
-    class VehicleDescriptor: GenericEntityDescriptor<TeamDC, TargetDC, PositionDC, HealthDC>
+    class VehicleDescriptor: GenericEntityDescriptor<TeamDC, TargetDC, PositionDC, HealthDC, TimeUntilSirenSwitch, SirenLight>
     {
         
     }

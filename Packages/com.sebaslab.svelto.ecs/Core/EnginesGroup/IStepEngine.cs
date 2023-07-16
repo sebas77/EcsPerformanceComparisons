@@ -12,7 +12,7 @@ namespace Svelto.ECS
     
     public interface IStepEngine<T> : IEngine
     {
-        void Step(in T _param);
+        void Step(in T param);
         
         string name { get; }
     }

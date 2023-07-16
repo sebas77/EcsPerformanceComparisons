@@ -22,8 +22,8 @@ namespace Svelto.ECS
             foreach (var group in groups)
             {
                 entitiesDb.QueryOrCreateEntityDictionary<T>(group, out var typeSafeDictionary);
-                        //if (typeSafeDictionary.count > 0) avoinding this allows these egidmappers to be precreated and stored
-                    dictionary.Add(group, ((UnmanagedTypeSafeDictionary<T>)typeSafeDictionary).implUnmgd);
+                        //if (typeSafeDictionary.count > 0) avoiding this allows these egidmappers to be precreated and stored
+                dictionary.Add(group, ((UnmanagedTypeSafeDictionary<T>)typeSafeDictionary).implUnmgd);
             }
             
             return new EGIDMultiMapperNB<T>(dictionary);

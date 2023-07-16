@@ -1,3 +1,5 @@
+#define ENABLE_INSPECTOR
+
 using System.Threading.Tasks;
 using Svelto.Context;
 using Svelto.ECS;
@@ -20,34 +22,40 @@ namespace Logic.SveltoECS
             _sirenLightMaterial = sveltoContext.sirenLightMaterial;
             
             _ticker = new SimpleEntitiesSubmissionScheduler();
-            var enginesRoot = new EnginesRoot(_ticker);
-            var entityFunctions = enginesRoot.GenerateEntityFunctions();
-            var entityFactory = enginesRoot.GenerateEntityFactory();
+            _enginesRoot = new EnginesRoot(_ticker);
+            var entityFunctions = _enginesRoot.GenerateEntityFunctions();
+            var entityFactory = _enginesRoot.GenerateEntityFactory();
 
             _sequentialEnginesGroup = new SirensSequentialEngines();
 
             _sequentialEnginesGroup.Add(new SpawnVehiclesSystem(entityFactory));
             _sequentialEnginesGroup.Add(new EnemyTargetSystem());
             _sequentialEnginesGroup.Add(new VehicleMovementSystem());
-            _sequentialEnginesGroup.Add(new SwitchSirenLightOnSystem());
-            _sequentialEnginesGroup.Add(new SwitchSirenLightOffSystem());
+            _sequentialEnginesGroup.Add(new SwitchSirenLightOnSystem(entityFunctions));
+            _sequentialEnginesGroup.Add(new SwitchSirenLightOffSystem(entityFunctions));
             _sequentialEnginesGroup.Add(new DecrementTimersSystem());
             _sequentialEnginesGroup.Add(new ShootSystem());
             _sequentialEnginesGroup.Add(new DieSystem(entityFunctions));
             _sequentialEnginesGroup.Add(new RenderSystem(_prefab, _materials, _sirenLightMaterial));
 
-            enginesRoot.AddEngine(_sequentialEnginesGroup);
+            _enginesRoot.AddEngine(_sequentialEnginesGroup);
+#if ENABLE_INSPECTOR            
+            SveltoInspector.Attach(_enginesRoot);
+#endif
 
+            entityFactory.BuildEntity<TimeDescriptor>(0, ExclusiveGroups.TimeGroup);
+            
             MainLoop();
         }
 
-        public void OnContextDestroyed(bool hasBeenInitialised) { }
-
-        public void OnContextCreated<T>(T contextHolder)
+        public void OnContextDestroyed(bool hasBeenInitialised)
         {
+            _enginesRoot.Dispose();
         }
 
-        public async void MainLoop()
+        public void OnContextCreated<T>(T contextHolder) { }
+
+        async void MainLoop()
         {
             while (Application.isPlaying)
             {
@@ -82,5 +90,6 @@ namespace Logic.SveltoECS
         GameObject _prefab;
         Material[] _materials;
         Material _sirenLightMaterial;
+        EnginesRoot _enginesRoot;
     }
 }
