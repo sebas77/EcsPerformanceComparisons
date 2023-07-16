@@ -50,6 +50,7 @@ namespace Logic.SveltoECS
 
         public void OnContextDestroyed(bool hasBeenInitialised)
         {
+            _disposed = true;
             _enginesRoot.Dispose();
         }
 
@@ -57,7 +58,7 @@ namespace Logic.SveltoECS
 
         async void MainLoop()
         {
-            while (Application.isPlaying)
+            while (Application.isPlaying && _disposed == false)
             {
                 _ticker.SubmitEntities();
 
@@ -91,5 +92,6 @@ namespace Logic.SveltoECS
         Material[] _materials;
         Material _sirenLightMaterial;
         EnginesRoot _enginesRoot;
+        bool _disposed;
     }
 }

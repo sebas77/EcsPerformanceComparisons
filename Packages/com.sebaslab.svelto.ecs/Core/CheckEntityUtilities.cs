@@ -207,9 +207,8 @@ namespace Svelto.ECS
 
             return operationName;
         }
-#if !DONT_USE
+
         DataStructures.FasterDictionary<EGID, OperationType> _multipleOperationOnSameEGIDChecker;
         DataStructures.FasterDictionary<ExclusiveGroupStruct, HashSet<uint>> _idChecker;
-#endif
     }
 }

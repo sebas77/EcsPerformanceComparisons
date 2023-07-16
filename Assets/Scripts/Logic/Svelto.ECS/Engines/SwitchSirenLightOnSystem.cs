@@ -27,26 +27,9 @@ namespace Logic.SveltoECS
                         var health = healths[i].Value;
                         ref var siren = ref sirens[i];
                         siren.LightIntensity = (int)math.min(150 - health, 100);
-                    }
-                }
-                
-                for (int i = 0; i < entitiesWithSirenOff; i++)
-                {
-                    ref var timeUntilSirenSwitch = ref times[i];
-                    if (timeUntilSirenSwitch.Value <= 0)
-                    {
+                        timeUntilSirenSwitch.Value = health / 100;
                         uint team = VehicleSirenOff.Offset(group);
                         _entityFunctions.SwapEntityGroup<VehicleDescriptor>(new EGID(entityIDs[i], group), VehicleSirenOn.BuildGroup + (uint)team);
-                    }
-                }
-                
-                for (int i = 0; i < entitiesWithSirenOff; i++)
-                {
-                    ref var timeUntilSirenSwitch = ref times[i];
-                    if (timeUntilSirenSwitch.Value <= 0)
-                    {
-                        var health = healths[i].Value;
-                        timeUntilSirenSwitch.Value = health / 100;
                     }
                 }
             }
