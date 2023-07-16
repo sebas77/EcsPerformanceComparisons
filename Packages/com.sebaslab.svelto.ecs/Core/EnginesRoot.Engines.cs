@@ -18,7 +18,6 @@ namespace Svelto.ECS
         {
             EntityDescriptorsWarmup.WarmUp();
             GroupHashMap.WarmUp();
-            //SharedDictonary.Init();
             SerializationDescriptorMap.Init();
 
             _swapEntities = SwapEntities;
@@ -38,13 +37,12 @@ namespace Svelto.ECS
         public EnginesRoot(EntitiesSubmissionScheduler entitiesComponentScheduler)
         {
             _entitiesOperations = new EntitiesOperations();
-            _idChecker = new FasterDictionary<ExclusiveGroupStruct, HashSet<uint>>();
 
             _cachedRangeOfSubmittedIndices = new FasterList<(uint, uint)>();
             _transientEntityIDsLeftAndAffectedByRemoval = new FasterList<uint>();
             _transientEntityIDsLeftWithoutDuplicates = new FasterDictionary<uint, int>();
 
-            _multipleOperationOnSameEGIDChecker = new FasterDictionary<EGID, uint>();
+            InitDebugChecks();
 #if UNITY_NATIVE //because of the thread count, ATM this is only for unity
             _nativeSwapOperationQueue = new AtomicNativeBags(Allocator.Persistent);
             _nativeRemoveOperationQueue = new AtomicNativeBags(Allocator.Persistent);

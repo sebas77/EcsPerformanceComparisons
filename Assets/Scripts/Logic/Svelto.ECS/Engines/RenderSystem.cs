@@ -40,18 +40,18 @@ namespace Logic.SveltoECS
         public void Step(in float time)
         {
             int entitiesCount = 0;
-            foreach (var ((colorfulEntities, colorfulEntitiesLength), group) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOff.Groups))
+            foreach (var ((entitiesWithSirenOff, count), group) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOff.Groups))
             {
-                UpdateVehicleColors(colorfulEntities, entitiesCount, colorfulEntitiesLength, VehicleSirenOff.Offset(group));
+                UpdateVehicleColors(entitiesWithSirenOff, entitiesCount, count, VehicleSirenOff.Offset(group));
 
-                entitiesCount += colorfulEntitiesLength;
+                entitiesCount += count;
             }
             
-            foreach (var ((colorfulEntities, colorfulEntitiesLength), _) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOn.Groups))
+            foreach (var ((entitiesWithSirenOn, count), _) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOn.Groups))
             {
-                UpdateSirenVehicleColors(colorfulEntities, entitiesCount, colorfulEntitiesLength);
+                UpdateSirenVehicleColors(entitiesWithSirenOn, entitiesCount, count);
 
-                entitiesCount += colorfulEntitiesLength;
+                entitiesCount += count;
             }
 
             for (var i = entitiesCount; i < Data.MaxVehicleCount; i++)
@@ -83,9 +83,8 @@ namespace Logic.SveltoECS
 
                 ref var position = ref entities[i].Value;
                 if (poolIndex >= Data.MaxVehicleCount)
-                {
                     throw new Exception("poolIndex >= Data.MaxVehicleCount");
-                }
+                
                 transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
                 meshPool[poolIndex].enabled = true;
                 meshPool[poolIndex].material = _sirenLightMaterial;

@@ -29,10 +29,9 @@ namespace Svelto.ECS.Internal
        , in EnginesRoot.EntityReferenceMap entityLocator
 #endif         
          );
-        void RemoveEntitiesFromDictionary
-         (FasterList<(uint, string)> infosToProcess, FasterList<uint> entityIDsAffectedByRemoval);
-        void SwapEntitiesBetweenDictionaries
-        (FasterList<(uint, uint, string)> infosToProcess, ExclusiveGroupStruct fromGroup, ExclusiveGroupStruct toGroup
+        void RemoveEntitiesFromDictionary(FasterList<(uint, string)> infosToProcess, FasterList<uint> entityIDsAffectedByRemoval);
+        void SwapEntitiesBetweenDictionaries(in FasterDictionary<uint, (uint, uint, string)> infosToProcess, ExclusiveGroupStruct fromGroup,
+         ExclusiveGroupStruct toGroup
        , ITypeSafeDictionary toComponentsDictionary, FasterList<uint> entityIDsAffectedByRemoval);
         
         //------------
@@ -49,7 +48,7 @@ namespace Svelto.ECS.Internal
         //------------
         
         //This is now obsolete, but I cannot mark it as such because it's heavily used by legacy projects
-        void ExecuteEnginesSwapCallbacks(FasterList<(uint, uint, string)> infosToProcess,
+        void ExecuteEnginesSwapCallbacks(FasterDictionary<uint, (uint, uint, string)> infosToProcess,
          FasterList<ReactEngineContainer<_Internal_IReactOnSwap>> reactiveEnginesSwap, ExclusiveGroupStruct fromGroup,
          ExclusiveGroupStruct toGroup, in PlatformProfiler sampler);
         //Version to use

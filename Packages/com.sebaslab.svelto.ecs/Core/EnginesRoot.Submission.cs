@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Svelto.Common;
 using Svelto.DataStructures;
+using Svelto.DataStructures.Native;
 using Svelto.ECS.Internal;
 
 namespace Svelto.ECS
@@ -161,18 +162,18 @@ namespace Svelto.ECS
             }
         }
 
-        static void SwapEntities(FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID,
-                FasterDictionary<ExclusiveGroupStruct, FasterList<(uint, uint, string)>>>> swapEntitiesOperations,
-            FasterList<(EGID, EGID)> entitiesIDSwaps, EnginesRoot enginesRoot)
+        static void SwapEntities(FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>> swapEntitiesOperations,
+            FasterDictionary<EGID, (EGID, EGID)> entitiesIDSwaps, EnginesRoot enginesRoot)
         {
             using (var sampler = new PlatformProfiler("Swap entities between groups"))
             {
                 using (sampler.Sample("Update Entity References"))
                 {
                     var count = entitiesIDSwaps.count;
+                    var entitiesIDSwapsValues = entitiesIDSwaps.unsafeValues;
                     for (int i = 0; i < count; i++)
                     {
-                        var (fromEntityGid, toEntityGid) = entitiesIDSwaps[i];
+                        var (fromEntityGid, toEntityGid) = entitiesIDSwapsValues[i];
 
                         enginesRoot._entityLocator.UpdateEntityReference(fromEntityGid, toEntityGid);
                     }
@@ -212,11 +213,8 @@ namespace Svelto.ECS
                                     toComponentsDictionaryDB != null,
                                     "something went wrong with the creation of dictionaries");
 
-                                //this list represents the set of entities that come from fromGroup and need
-                                //to be swapped to toGroup. Most of the times will be 1 of few units.
-                                FasterList<(uint, uint, string)> fromEntityToEntityIDs = entitiesInfoToSwap.value;
-
                                 //ensure that to dictionary has enough room to store the new entities
+                                var fromEntityToEntityIDs = entitiesInfoToSwap.value;
                                 toComponentsDictionaryDB.EnsureCapacity(
                                     (uint)(toComponentsDictionaryDB.count + (uint)fromEntityToEntityIDs.count));
 
@@ -550,9 +548,7 @@ namespace Svelto.ECS
         //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
         static readonly
-            Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID,
-                    FasterDictionary<ExclusiveGroupStruct, FasterList<(uint, uint, string)>>>>, FasterList<(EGID, EGID)>
-               , EnginesRoot> _swapEntities;
+            Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>>, FasterDictionary<EGID, (EGID, EGID)>, EnginesRoot> _swapEntities;
 
         static readonly Action<
             FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterList<(uint, string)>>>,

@@ -24,7 +24,7 @@ namespace Logic.SveltoECS
 
             for (uint i = 0; i < maxTeamCount; i++)
             {
-                if (entitiesDB.Count<TeamDC>(VehicleSirenOff.BuildGroup + i) >= maxVehicleCount)
+                if (entitiesDB.Count<TeamDC>(VehicleSirenOff.BuildGroup + i) +  entitiesDB.Count<TeamDC>(VehicleSirenOn.BuildGroup + i)>= maxVehicleCount)
                     continue;
                 
                 var egid = new EGID((uint)Count++, VehicleSirenOff.BuildGroup + i);

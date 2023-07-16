@@ -1,4 +1,6 @@
+#if DEBUG
 #define ENABLE_INSPECTOR
+#endif
 
 using System.Threading.Tasks;
 using Svelto.Context;
@@ -43,8 +45,6 @@ namespace Logic.SveltoECS
             SveltoInspector.Attach(_enginesRoot);
 #endif
 
-            entityFactory.BuildEntity<TimeDescriptor>(0, ExclusiveGroups.TimeGroup);
-            
             MainLoop();
         }
 

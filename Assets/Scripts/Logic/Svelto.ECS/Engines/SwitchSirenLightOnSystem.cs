@@ -16,10 +16,10 @@ namespace Logic.SveltoECS
 
         public void Step(in float time)
         {
-            foreach (var ((healths, times, sirens, entityIDs, colorfulEntitiesLength), group) in
+            foreach (var ((healths, times, sirens, entityIDs, entitiesWithSirenOff), group) in
                      entitiesDB.QueryEntities<HealthDC, TimeUntilSirenSwitch, SirenLight>(VehicleSirenOff.Groups))
             {
-                for (int i = 0; i < colorfulEntitiesLength; i++)
+                for (int i = 0; i < entitiesWithSirenOff; i++)
                 {
                     ref var timeUntilSirenSwitch = ref times[i];
                     if (timeUntilSirenSwitch.Value <= 0)
@@ -27,9 +27,26 @@ namespace Logic.SveltoECS
                         var health = healths[i].Value;
                         ref var siren = ref sirens[i];
                         siren.LightIntensity = (int)math.min(150 - health, 100);
-                        timeUntilSirenSwitch.Value = health / 100;
+                    }
+                }
+                
+                for (int i = 0; i < entitiesWithSirenOff; i++)
+                {
+                    ref var timeUntilSirenSwitch = ref times[i];
+                    if (timeUntilSirenSwitch.Value <= 0)
+                    {
                         uint team = VehicleSirenOff.Offset(group);
                         _entityFunctions.SwapEntityGroup<VehicleDescriptor>(new EGID(entityIDs[i], group), VehicleSirenOn.BuildGroup + (uint)team);
+                    }
+                }
+                
+                for (int i = 0; i < entitiesWithSirenOff; i++)
+                {
+                    ref var timeUntilSirenSwitch = ref times[i];
+                    if (timeUntilSirenSwitch.Value <= 0)
+                    {
+                        var health = healths[i].Value;
+                        timeUntilSirenSwitch.Value = health / 100;
                     }
                 }
             }

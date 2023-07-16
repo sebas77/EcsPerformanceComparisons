@@ -12,7 +12,14 @@ namespace Logic.SveltoECS
 
         public void Step(in float time)
         {
-            entitiesDB.QueryUniqueEntity<TimeUntilSirenSwitch>(ExclusiveGroups.TimeGroup).Value -= time;
+            foreach (var ((times, vehicles), group) in entitiesDB.QueryEntities<TimeUntilSirenSwitch>(VehicleTag.Groups))
+            {
+                for (int i = 0; i < vehicles; i++)
+                {
+                    ref var timeUntilSirenSwitch = ref times[i];
+                        timeUntilSirenSwitch.Value -= time;
+                }
+            }
         }
 
         public string name => nameof(DecrementTimersSystem);

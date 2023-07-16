@@ -123,7 +123,7 @@ namespace Svelto.ECS
 
         //this method is called by the framework only if listOfFilters.count > 0
         void SwapEntityBetweenPersistentFilters
-        (FasterList<(uint, uint, string)> fromEntityToEntityIDs, ITypeSafeDictionary fromDic
+        (FasterDictionary<uint, (uint, uint, string)> fromEntityToEntityIDs, ITypeSafeDictionary fromDic
        , ITypeSafeDictionary toDic, ExclusiveGroupStruct fromGroup, ExclusiveGroupStruct toGroup
        , ComponentID refWrapperType, FasterList<uint> entityIDsLeftAndAffectedByRemoval)
         {
@@ -155,8 +155,12 @@ namespace Svelto.ECS
                     {
                         EntityFilterCollection.GroupFilters groupFilterTo = default;
 
-                        foreach (var (fromEntityID, toEntityID, _) in fromEntityToEntityIDs)
+                        var count = fromEntityToEntityIDs.count;
+                        var unsafeValues = fromEntityToEntityIDs.unsafeValues;
+
+                        for (var index = 0; index < count; index++)
                         {
+                            var (fromEntityID, toEntityID, _) = unsafeValues[index];
                             var toIndex = toDic.GetIndex(toEntityID); //todo: optimize this should be calculated only once and not once per filter
                             //if there is an entity, it must be moved to the to filter
                             if (fromGroupFilter.Exists(fromEntityID) == true)
@@ -168,8 +172,9 @@ namespace Svelto.ECS
                             }
                         }
 
-                        foreach (var (fromEntityID, _, _) in fromEntityToEntityIDs)
+                        for (var index = 0; index < count; index++)
                         {
+                            var (fromEntityID, _, _) = unsafeValues[index];
                             fromGroupFilter.Remove(fromEntityID); //Remove works even if the ID is not found (just returns false)
                         }
 

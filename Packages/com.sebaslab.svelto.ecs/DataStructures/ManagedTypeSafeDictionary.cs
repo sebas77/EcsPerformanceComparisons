@@ -165,10 +165,9 @@ namespace Svelto.ECS.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SwapEntitiesBetweenDictionaries
-        (FasterList<(uint, uint, string)> infosToProcess, ExclusiveGroupStruct fromGroup
-       , ExclusiveGroupStruct toGroup, ITypeSafeDictionary toComponentsDictionary
-       , FasterList<uint> entityIDsAffectedByRemoval)
+        public void SwapEntitiesBetweenDictionaries(in FasterDictionary<uint, (uint, uint, string)> infosToProcess, ExclusiveGroupStruct fromGroup
+          , ExclusiveGroupStruct toGroup, ITypeSafeDictionary toComponentsDictionary
+          , FasterList<uint> entityIDsAffectedByRemoval)
         {
             TypeSafeDictionaryMethods.SwapEntitiesBetweenDictionaries(infosToProcess, ref implMgd
                                                                     , toComponentsDictionary as
@@ -192,10 +191,9 @@ namespace Svelto.ECS.Internal
         ///     Execute all the engine IReactOnSwap callbacks linked to components swapped this submit
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ExecuteEnginesSwapCallbacks
-        (FasterList<(uint, uint, string)> infosToProcess
-       , FasterList<ReactEngineContainer<_Internal_IReactOnSwap>> reactiveEnginesSwap, ExclusiveGroupStruct fromGroup
-       , ExclusiveGroupStruct toGroup, in PlatformProfiler profiler)
+        public void ExecuteEnginesSwapCallbacks(FasterDictionary<uint, (uint, uint, string)> infosToProcess
+          , FasterList<ReactEngineContainer<_Internal_IReactOnSwap>> reactiveEnginesSwap, ExclusiveGroupStruct fromGroup
+          , ExclusiveGroupStruct toGroup, in PlatformProfiler profiler)
         {
             TypeSafeDictionaryMethods.ExecuteEnginesSwapCallbacks(infosToProcess, ref implMgd, reactiveEnginesSwap
                                                                 , toGroup, fromGroup, in profiler);

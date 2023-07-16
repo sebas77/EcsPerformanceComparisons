@@ -285,7 +285,7 @@ namespace Svelto.ECS.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ExecuteEnginesSwapCallbacks<Strategy1, Strategy2, Strategy3, TValue>(FasterList<(uint, uint, string)> infostoprocess
+        public static void ExecuteEnginesSwapCallbacks<Strategy1, Strategy2, Strategy3, TValue>(FasterDictionary<uint, (uint, uint, string)> infostoprocess
           , ref SveltoDictionary<uint, TValue, Strategy1, Strategy2, Strategy3> fromDictionary
           , FasterList<ReactEngineContainer<_Internal_IReactOnSwap>> reactiveenginesswap, ExclusiveGroupStruct togroup
           , ExclusiveGroupStruct fromgroup, in PlatformProfiler sampler)
@@ -299,9 +299,11 @@ namespace Svelto.ECS.Internal
 
             var iterations = infostoprocess.count;
 
+            var infostoprocessUnsafeValues = infostoprocess.unsafeValues;
+
             for (var i = 0; i < iterations; i++)
             {
-                var (fromEntityID, toEntityID, trace) = infostoprocess[i];
+                var (fromEntityID, toEntityID, trace) = infostoprocessUnsafeValues[i];
 
                 try
                 {
@@ -451,7 +453,7 @@ namespace Svelto.ECS.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapEntitiesBetweenDictionaries<Strategy1, Strategy2, Strategy3, TValue>(FasterList<(uint, uint, string)> infostoprocess
+        public static void SwapEntitiesBetweenDictionaries<Strategy1, Strategy2, Strategy3, TValue>(in FasterDictionary<uint, (uint, uint, string)> infostoprocess
           , ref SveltoDictionary<uint, TValue, Strategy1, Strategy2, Strategy3> fromDictionary
           , ITypeSafeDictionary<TValue> toDictionary, ExclusiveGroupStruct fromgroup, ExclusiveGroupStruct togroup
           , FasterList<uint> entityIDsAffectedByRemoval)
@@ -461,10 +463,11 @@ namespace Svelto.ECS.Internal
                 where TValue : struct, _IInternalEntityComponent
         {
             var iterations = infostoprocess.count;
+            var infostoprocessUnsafeValues = infostoprocess.unsafeValues;
 
             for (var i = 0; i < iterations; i++)
             {
-                var (fromID, toID, trace) = infostoprocess[i];
+                var (fromID, toID, trace) = infostoprocessUnsafeValues[i];
 
                 try
                 {
