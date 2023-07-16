@@ -1,4 +1,4 @@
-#if DEBUG
+#if DEBUG && !PROFILE_SVELTO
 #define ENABLE_INSPECTOR
 #endif
 

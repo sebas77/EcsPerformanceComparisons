@@ -6,10 +6,8 @@ using JamesFrowen.SimpleWeb;
 using Svelto.ECS;
 using UnityEngine;
 
-static public class SveltoInspector
+public static class SveltoInspector
 {
-    static bool _mustQuit;
-
     public static void Attach(EnginesRoot enginesRoot)
     {
         WebSocketWrapper wrapper = new WebSocketWrapper();
@@ -71,6 +69,8 @@ static public class SveltoInspector
             server.SendOne(connectionId, source);
         }
     }
+    
+    static bool _mustQuit;
 }
 
 #endif
