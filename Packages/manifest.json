@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.james-frowen.simplewebtransport": "1.6.3",
+    "com.james-frowen.simplewebtransport": "1.6.4",
     "com.meryel.code-analysis-3-11": "https://github.com/merryyellow/code-analysis-3-11.git",
     "com.tayx.graphy": "https://github.com/Tayx94/graphy.git",
     "com.unity.collab-proxy": "2.0.5",
