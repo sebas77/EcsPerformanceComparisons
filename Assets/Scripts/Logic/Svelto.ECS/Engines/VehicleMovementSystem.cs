@@ -22,8 +22,6 @@ namespace Logic.SveltoECS
                         if (math.distance(currentPosition, targetPosition) < DefaultECS.Data.WeaponRange)
                             continue;
                         
-                      //  Debug.Log($"Moving {vehicle} from {currentPosition} to {targetPosition} target {egid}");
-
                         var direction = math.normalize(targetPosition - currentPosition);
                         var newPosition = currentPosition + direction * Data.VehicleSpeed * time;
                         position.Value = newPosition;
@@ -41,6 +39,6 @@ namespace Logic.SveltoECS
  
         public string name => nameof(VehicleMovementSystem);
         
-        EGIDMultiMapperNB<PositionDC> _mapped;
+        EGIDMultiMapper<PositionDC> _mapped;
     }
 }

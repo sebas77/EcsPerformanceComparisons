@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Svelto.Common;
 using Svelto.DataStructures;
-using Svelto.DataStructures.Native;
 using Svelto.ECS.Internal;
 
 namespace Svelto.ECS
@@ -11,9 +10,9 @@ namespace Svelto.ECS
     /// to retrieve an EGIDMultiMapper use entitiesDB.QueryMappedEntities<T>(groups);
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public readonly struct EGIDMultiMapperNB<T> where T : unmanaged, _IInternalEntityComponent
+    public readonly struct EGIDMultiMapper<T> where T : struct, _IInternalEntityComponent
     {
-        internal EGIDMultiMapperNB(FasterDictionary<ExclusiveGroupStruct, SharedSveltoDictionaryNative<uint, T>> dictionary)
+        internal EGIDMultiMapper(FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary<T>> dictionary)
         {
             _dic = dictionary;
         }
@@ -34,13 +33,29 @@ namespace Svelto.ECS
             ref var sveltoDictionary = ref _dic.GetValueByRef(entity.groupID);
             return ref sveltoDictionary.GetValueByRef(entity.entityID);
         }
+        
+        public EntityCollection<T> Entities(ExclusiveGroupStruct targetEgidGroupID)
+        {
+            uint count = 0;
+            IBuffer<T> buffer;
+            IEntityIDs ids = default;
+
+            if (_dic.TryGetValue(targetEgidGroupID, out var typeSafeDictionary) == false)
+                buffer = default;
+            else
+            {
+                ITypeSafeDictionary<T> safeDictionary = typeSafeDictionary;
+                buffer = safeDictionary.GetValues(out count);
+                ids = safeDictionary.entityIDs;
+            }
+
+            return new EntityCollection<T>(buffer, ids, count);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Exists(EGID entity)
         {
-            var tryFindIndex = _dic.TryFindIndex(entity.groupID, out var index);
-            var containsKey = _dic.GetDirectValueByRef(index).ContainsKey(entity.entityID);
-            return tryFindIndex && containsKey;
+            return _dic.TryFindIndex(entity.groupID, out var index) && _dic.GetDirectValueByRef(index).ContainsKey(entity.entityID);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,6 +90,6 @@ namespace Svelto.ECS
 
         public Type entityType => TypeCache<T>.type;
 
-        readonly FasterDictionary<ExclusiveGroupStruct, SharedSveltoDictionaryNative<uint, T>> _dic;
+        readonly FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary<T>> _dic;
     }
 }

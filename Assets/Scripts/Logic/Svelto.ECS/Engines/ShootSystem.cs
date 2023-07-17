@@ -21,7 +21,7 @@ namespace Logic.SveltoECS
                         var targetPositions = entitiesDB.QueryEntitiesAndIndex<PositionDC>(targetEGID, out var index);
                         if (math.distance(currentPosition, targetPositions[index].Value) <= Data.WeaponRange)
                         {
-                            (NB<HealthDC> targetHealths, _) = entitiesDB.QueryEntities<HealthDC>(targetEGID.groupID);
+                            (NB<HealthDC> targetHealths, _) = _mapped.Entities(targetEGID.groupID);
 
                             targetHealths[index].Value -= (Data.WeaponDamage * time);
                         }
@@ -33,6 +33,12 @@ namespace Logic.SveltoECS
         public EntitiesDB entitiesDB { get; set; }
 
         public string name => nameof(ShootSystem);
-        public void Ready() { }
+
+        public void Ready()
+        {
+            _mapped = entitiesDB.QueryMappedEntities<HealthDC>(VehicleTag.Groups);
+        }
+        
+        EGIDMultiMapper<HealthDC> _mapped;
     }
 }

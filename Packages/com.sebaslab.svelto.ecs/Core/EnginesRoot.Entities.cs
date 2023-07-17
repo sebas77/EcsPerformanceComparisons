@@ -4,47 +4,26 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Svelto.DataStructures;
-using Svelto.DataStructures.Native;
-using Svelto.ECS.Hybrid;
 using Svelto.ECS.Internal;
-using Svelto.ECS.Native;
 
 namespace Svelto.ECS
 {
     public static class EGIDMultiMapperNBExtension
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EGIDMultiMapperNB<T> QueryMappedEntities<T>(this EntitiesDB entitiesDb, LocalFasterReadOnlyList<ExclusiveGroupStruct> groups)
-                where T : unmanaged, _IInternalEntityComponent
+        public static EGIDMultiMapper<T> QueryMappedEntities<T>(this EntitiesDB entitiesDb, LocalFasterReadOnlyList<ExclusiveGroupStruct> groups)
+                where T : struct, _IInternalEntityComponent
         {
-            var dictionary = new FasterDictionary<ExclusiveGroupStruct, SharedSveltoDictionaryNative<uint, T>>((uint) groups.count);
+            var dictionary = new FasterDictionary<ExclusiveGroupStruct, ITypeSafeDictionary<T>>((uint) groups.count);
         
             foreach (var group in groups)
             {
                 entitiesDb.QueryOrCreateEntityDictionary<T>(group, out var typeSafeDictionary);
                         //if (typeSafeDictionary.count > 0) avoiding this allows these egidmappers to be precreated and stored
-                dictionary.Add(group, ((UnmanagedTypeSafeDictionary<T>)typeSafeDictionary).implUnmgd);
+                dictionary.Add(group, typeSafeDictionary as ITypeSafeDictionary<T>);
             }
             
-            return new EGIDMultiMapperNB<T>(dictionary);
-        }
-    }
-
-    public static class EGIDMultiMapperMBExtension
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EGIDMultiMapperMB<T> QueryMappedEntities<T>(this EntitiesDB entitiesDb, LocalFasterReadOnlyList<ExclusiveGroupStruct> groups)
-                where T : struct, IEntityViewComponent
-        {
-            var dictionary = new FasterDictionary<ExclusiveGroupStruct, SveltoDictionary<uint, T, ManagedStrategy<SveltoDictionaryNode<uint>>, ManagedStrategy<T>, ManagedStrategy<int>>>((uint) groups.count);
-        
-            foreach (var group in groups)
-            {
-                entitiesDb.QueryOrCreateEntityDictionary<T>(group, out var typeSafeDictionary);
-                dictionary.Add(group, ((ManagedTypeSafeDictionary<T>)typeSafeDictionary).implMgd);
-            }
-            
-            return new EGIDMultiMapperMB<T>(dictionary);
+            return new EGIDMultiMapper<T>(dictionary);
         }
     }
 

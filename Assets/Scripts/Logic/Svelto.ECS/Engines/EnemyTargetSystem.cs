@@ -22,7 +22,7 @@ namespace Logic.SveltoECS
 
                     //pick up a random team index to not always attack the same team
                     var enemyTeamIndex = UnityEngine.Random.Range(0, Data.MaxTeamCount - 1);
-                    var teamGroup = /*(DateTime.Now.Millisecond & 1)*/ 0 == 0 ? VehicleSirenOff.BuildGroup : VehicleSirenOn.BuildGroup; //vehicles can be found in siren or not siren states. Without using filters, I have to choose one state the target is going to be found
+                    var teamGroup = (DateTime.Now.Millisecond & 1) == 0 ? VehicleSirenOff.BuildGroup : VehicleSirenOn.BuildGroup; //vehicles can be found in siren or not siren states. Without using filters, I have to choose one state the target is going to be found
                     int offset = 0;
 
                     while (offset++ < Data.MaxTeamCount) //search for target to attack in a team different than the entity one
