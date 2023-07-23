@@ -2,22 +2,19 @@
 
 namespace Logic.SveltoECS
 {
-    public sealed class VehicleSirenOn: GroupCompound<VehicleTag, SirenTag> { }
-    public sealed class VehicleSirenOff: GroupCompound<VehicleTag, WithoutSirenTag> { }
-    
-    public sealed class SirenTag: GroupTag<SirenTag> { }
-    public sealed class WithoutSirenTag: GroupTag<WithoutSirenTag> { }
-    
+    public static class VechilesFilterIds
+    {
+        static readonly FilterContextID VehicleFilterContext = FilterContextID.GetNewContextID();
+        
+        public static CombinedFilterID VehiclesWithSirenOn = new CombinedFilterID(0, VehicleFilterContext);
+        public static CombinedFilterID VehiclesWithSirenOff = new CombinedFilterID(1, VehicleFilterContext);
+    }
+
     public sealed class VehicleTag: GroupTag<VehicleTag> 
     {
         static VehicleTag()
         {
             range = (ushort)Data.MaxTeamCount;
         }
-    }
-
-    public static class ExclusiveGroups
-    {
-        public static ExclusiveGroup TimeGroup = new ExclusiveGroup();
     }
 }

@@ -249,6 +249,9 @@ namespace Svelto.ECS
 
         void Dispose(bool disposing)
         {
+            if (_isDisposed)
+                return;
+            
             using (var profiler = new PlatformProfiler("Final Dispose"))
             {
                 //Note: The engines are disposed before the the remove callback to give the chance to behave

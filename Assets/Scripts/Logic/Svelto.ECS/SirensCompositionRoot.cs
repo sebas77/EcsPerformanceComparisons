@@ -33,8 +33,8 @@ namespace Logic.SveltoECS
             _sequentialEnginesGroup.Add(new SpawnVehiclesSystem(entityFactory));
             _sequentialEnginesGroup.Add(new EnemyTargetSystem());
             _sequentialEnginesGroup.Add(new VehicleMovementSystem());
-            _sequentialEnginesGroup.Add(new SwitchSirenLightOnSystem(entityFunctions));
-            _sequentialEnginesGroup.Add(new SwitchSirenLightOffSystem(entityFunctions));
+            _sequentialEnginesGroup.Add(new SwitchSirenLightOnSystem());
+            _sequentialEnginesGroup.Add(new SwitchSirenLightOffSystem());
             _sequentialEnginesGroup.Add(new DecrementTimersSystem());
             _sequentialEnginesGroup.Add(new ShootSystem());
             _sequentialEnginesGroup.Add(new DieSystem(entityFunctions));

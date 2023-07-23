@@ -22,7 +22,7 @@ namespace Logic.SveltoECS
 
                     //pick up a random team index to not always attack the same team
                     var enemyTeamIndex = UnityEngine.Random.Range(0, Data.MaxTeamCount - 1);
-                    var teamGroup = (DateTime.Now.Millisecond & 1) == 0 ? VehicleSirenOff.BuildGroup : VehicleSirenOn.BuildGroup; //vehicles can be found in siren or not siren states. Without using filters, I have to choose one state the target is going to be found
+                    var teamGroup = VehicleTag.BuildGroup;
                     int offset = 0;
 
                     while (offset++ < Data.MaxTeamCount) //search for target to attack in a team different than the entity one
@@ -31,7 +31,7 @@ namespace Logic.SveltoECS
                         var enemyTeam = teamGroup + (uint)wrappedIndex;
                         if (enemyTeam == group) continue;
                         //todo: jumping groups like this is a killer for the cache, it would be wiser to have a better strategy to pick up enemies to minimise the number of queries
-                        var (positions, entityIDs, enemyTeamCount) = entitiesDB.QueryEntities<PositionDC>(enemyTeam);
+                        var (_, entityIDs, enemyTeamCount) = entitiesDB.QueryEntities<PositionDC>(enemyTeam);
                         if (enemyTeamCount > 0)
                         { //get any random entity from a team with still alive vehicles
                             uint index = (uint)UnityEngine.Random.Range(0, enemyTeamCount);

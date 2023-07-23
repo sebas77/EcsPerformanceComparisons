@@ -90,7 +90,7 @@ namespace Svelto.ECS
                 var operation = componentBuilders[index];
 
                 //Get the dictionary for each component that holds the list of entities to swap
-                swappedComponentsPerType 
+                swappedComponentsPerType
                         //recycle or create dictionaries per component type
                        .RecycleOrAdd(operation.getComponentID, _newGroupDictionary, _recycleDicitionaryWithCaller)
                         //recycle or create list of entities to swap
@@ -106,7 +106,10 @@ namespace Svelto.ECS
             return _thisSubmissionInfo.AnyOperationQueued();
         }
 
-        public void ExecuteRemoveAndSwappingOperations(Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>>, FasterDictionary<EGID, (EGID, EGID)>, EnginesRoot> swapEntities, Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterList<(uint, string)>>>,
+        public void ExecuteRemoveAndSwappingOperations(
+            Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID,
+                    FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>>, FasterDictionary<EGID, (EGID, EGID)>,
+                EnginesRoot> swapEntities, Action<FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterList<(uint, string)>>>,
                 FasterList<EGID>, EnginesRoot> removeEntities, Action<ExclusiveGroupStruct, EnginesRoot> removeGroup,
             Action<ExclusiveGroupStruct, ExclusiveGroupStruct, EnginesRoot> swapGroup, EnginesRoot enginesRoot)
         {
@@ -145,8 +148,7 @@ namespace Svelto.ECS
                 }
 
             if (_lastSubmittedInfo._entitiesSwapped.count > 0)
-                swapEntities(
-                    _lastSubmittedInfo._currentSwapEntitiesOperations, _lastSubmittedInfo._entitiesSwapped, enginesRoot);
+                swapEntities(_lastSubmittedInfo._currentSwapEntitiesOperations, _lastSubmittedInfo._entitiesSwapped, enginesRoot);
 
             if (_lastSubmittedInfo._entitiesRemoved.count > 0)
                 removeEntities(
@@ -161,7 +163,7 @@ namespace Svelto.ECS
             return new FasterDictionary<ComponentID, FasterList<(uint, string)>>();
         }
 
-        static  void RecycleDictionary(ref FasterDictionary<ComponentID, FasterList<(uint, string)>> recycled)
+        static void RecycleDictionary(ref FasterDictionary<ComponentID, FasterList<(uint, string)>> recycled)
         {
             recycled.Recycle();
         }
@@ -191,7 +193,8 @@ namespace Svelto.ECS
             return new FasterDictionary<uint, (uint, uint, string)>();
         }
 
-        static FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>> NewGroupsDictionaryWithCaller()
+        static FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>
+                NewGroupsDictionaryWithCaller()
         {
             return new FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>();
         }
@@ -248,7 +251,8 @@ namespace Svelto.ECS
                 _groupsToSwap = new FasterList<(ExclusiveBuildGroup, ExclusiveBuildGroup, string)>();
 
                 _currentSwapEntitiesOperations =
-                        new FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID, FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>>();
+                        new FasterDictionary<ExclusiveGroupStruct, FasterDictionary<ComponentID,
+                            FasterDictionary<ExclusiveGroupStruct, FasterDictionary<uint, (uint, uint, string)>>>>();
                 _currentRemoveEntitiesOperations =
                         new FasterDictionary<ExclusiveGroupStruct,
                             FasterDictionary<ComponentID, FasterList<(uint, string)>>>();

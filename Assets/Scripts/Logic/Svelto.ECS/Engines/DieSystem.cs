@@ -11,18 +11,17 @@ namespace Logic.SveltoECS
 
         public void Step(in float time)
         {
-            foreach (var ((entities, ids, aliveCount), group) in entitiesDB.QueryEntities<HealthDC>(VehicleTag.Groups))
+            foreach (var ((healths, ids, aliveCount), group) in entitiesDB.QueryEntities<HealthDC>(VehicleTag.Groups))
             {
                 for (int i = 0; i < aliveCount; ++i)
                 {
-                    if (entities[i].Value <= 0)
-                        _functions.RemoveEntity<VehicleDescriptor>(ids[i], group);
+                    if (healths[i].Value <= 0)
+                        _functions.RemoveEntity<VehicleDescriptor>(ids[i], group); //will be removed from persistent filters too
                 }
             }
         }
 
-        public void Ready()
-        { }
+        public void Ready() { }
 
         public EntitiesDB entitiesDB { get; set; }
         

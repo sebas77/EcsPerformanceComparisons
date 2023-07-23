@@ -44,6 +44,13 @@
                 indices = _filter.indices;
                 group   = _filter.group;
             }
+            
+            public void Deconstruct(out EntityFilterIndices indices, out ExclusiveGroupStruct group, out EntityFilterCollection.GroupFilters groupFilter)
+            {
+                indices = _filter.indices;
+                group   = _filter.group;
+                groupFilter   = _filter;
+            }
 
             readonly EntityFilterCollection.GroupFilters _filter;
         }

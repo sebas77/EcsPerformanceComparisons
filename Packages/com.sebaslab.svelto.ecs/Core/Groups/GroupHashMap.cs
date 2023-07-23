@@ -101,10 +101,7 @@ namespace Svelto.ECS
             static void CallStaticConstructorsRecursively(Type type)
             {
                 // Check if the current type has a static constructor
-//                ConstructorInfo staticConstructor = type.TypeInitializer;
-  //              if (staticConstructor != null)
-                    //staticConstructor.Invoke(null, null); //calling Invoke will force the static constructor to be called even if already called
-                    
+//                type.TypeInitializer.Invoke(null, null); //calling Invoke will force the static constructor to be called even if already called, this is a problem because GroupTag and Compound throw an exception if called multiple times
                 RuntimeHelpers.RunClassConstructor(type.TypeHandle); //this will call the static constructor only once
                     
 #if DEBUG && !PROFILE_SVELTO

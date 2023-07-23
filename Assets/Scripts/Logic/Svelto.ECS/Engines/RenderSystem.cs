@@ -33,27 +33,33 @@ namespace Logic.SveltoECS
         {
             for (var i = 0; i < transformPool.Length; i++)
             {
-                GameObject.Destroy(transformPool[i].gameObject);
+                var transform = transformPool[i];
+                if (transform)
+                    GameObject.Destroy(transform);
             }
         }
 
         public void Step(in float time)
         {
             int entitiesCount = 0;
-            foreach (var ((entitiesWithSirenOff, count), group) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOff.Groups))
+            var filters = entitiesDB.GetFilters();
+            foreach (var (indicies, group) in filters.GetPersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOff))
             {
-                UpdateVehicleColors(entitiesWithSirenOff, entitiesCount, count, VehicleSirenOff.Offset(group));
+                var (entitiesWithSirenOff, _) = entitiesDB.QueryEntities<PositionDC>(group);
+                UpdateVehicleColors(entitiesWithSirenOff, entitiesCount, indicies, VehicleTag.Offset(group));
 
-                entitiesCount += count;
+                entitiesCount += indicies.count;
             }
             
-            foreach (var ((entitiesWithSirenOn, count), _) in entitiesDB.QueryEntities<PositionDC>(VehicleSirenOn.Groups))
+            foreach (var (indicies, group) in filters.GetPersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOn))
             {
-                UpdateSirenVehicleColors(entitiesWithSirenOn, entitiesCount, count);
+                var (entitiesWithSirenOn, _) = entitiesDB.QueryEntities<PositionDC>(group);
 
-                entitiesCount += count;
+                UpdateSirenVehicleColors(entitiesWithSirenOn, entitiesCount, indicies);
+
+                entitiesCount += indicies.count;
             }
-
+            
             for (var i = entitiesCount; i < Data.MaxVehicleCount; i++)
             {
                 meshPool[i].enabled = false;
@@ -61,33 +67,38 @@ namespace Logic.SveltoECS
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void UpdateVehicleColors(NB<PositionDC> entities, int poolIndexCount, int entitiesLength, uint teamIndex)
+        void UpdateVehicleColors(NB<PositionDC> entities, int poolIndexCount, EntityFilterIndices indicies, uint teamIndex)
         {
-            for (var i = 0; i < entitiesLength; i++)
+            var entitiesLengthCount = indicies.count;
+            
+            for (var i = 0; i < entitiesLengthCount; i++)
             {
                 int poolIndex = poolIndexCount + i;
 
-                ref var position = ref entities[i].Value;
+                ref var position = ref entities[indicies[i]].Value;
+                
                 transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
-                meshPool[poolIndex].enabled = true;
-                meshPool[poolIndex].material = _materials[teamIndex];
+                var meshRenderer = meshPool[poolIndex];
+                meshRenderer.enabled = true;
+                meshRenderer.material = _materials[teamIndex];
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void UpdateSirenVehicleColors(NB<PositionDC> entities, int poolIndexCount, int entitiesLength)
+        void UpdateSirenVehicleColors(NB<PositionDC> entities, int poolIndexCount, EntityFilterIndices indicies)
         {
-            for (var i = 0; i < entitiesLength; i++)
+            var entitiesLengthCount = indicies.count;
+            
+            for (var i = 0; i < entitiesLengthCount; i++)
             {
                 int poolIndex = poolIndexCount + i;
 
-                ref var position = ref entities[i].Value;
-                if (poolIndex >= Data.MaxVehicleCount)
-                    throw new Exception("poolIndex >= Data.MaxVehicleCount");
+                ref var position = ref entities[indicies[i]].Value;
                 
                 transformPool[poolIndex].position = new Vector3(position.x, 0, position.y);
-                meshPool[poolIndex].enabled = true;
-                meshPool[poolIndex].material = _sirenLightMaterial;
+                var meshRenderer = meshPool[poolIndex];
+                meshRenderer.enabled = true;
+                meshRenderer.material = _sirenLightMaterial;
             }
         }
 

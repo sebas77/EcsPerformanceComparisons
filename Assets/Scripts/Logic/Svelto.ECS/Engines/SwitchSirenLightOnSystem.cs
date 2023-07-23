@@ -5,31 +5,39 @@ namespace Logic.SveltoECS
 {
     public class SwitchSirenLightOnSystem: IQueryingEntitiesEngine, IStepEngine<float>
     {
-        public SwitchSirenLightOnSystem(IEntityFunctions entityFunctions)
+        public void Ready()
         {
-            _entityFunctions = entityFunctions;
+            var filters = entitiesDB.GetFilters();
+            
+            _entityFilterCollectionOff = filters.GetPersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOff);
+            _entityFilterCollectionOn = filters.GetPersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOn);
         }
-
-        public void Ready() { }
 
         public EntitiesDB entitiesDB { get; set; }
 
         public void Step(in float time)
         {
-            foreach (var ((healths, times, sirens, entityIDs, entitiesWithSirenOff), group) in
-                     entitiesDB.QueryEntities<HealthDC, TimeUntilSirenSwitch, SirenLight>(VehicleSirenOff.Groups))
+            //switch Off To On
+            foreach ((EntityFilterIndices indicies, ExclusiveGroupStruct group, var offGroupfilter) in _entityFilterCollectionOff)
             {
-                for (int i = 0; i < entitiesWithSirenOff; i++)
+                var (healths, times, sirens, entityIDs, _) = entitiesDB.QueryEntities<HealthDC, TimeUntilSirenSwitch, SirenLight>(group);
+
+                var onGroupFilter = _entityFilterCollectionOn.GetOrCreateGroupFilter(group);
+                
+                for (int i = 0; i < indicies.count; i++)
                 {
-                    ref var timeUntilSirenSwitch = ref times[i];
+                    var index = indicies[i];
+                    ref var timeUntilSirenSwitch = ref times[index];
                     if (timeUntilSirenSwitch.Value <= 0)
                     {
-                        var health = healths[i].Value;
-                        ref var siren = ref sirens[i];
-                        siren.LightIntensity = (int)math.min(150 - health, 100);
+                        var health = healths[index].Value;
+                        sirens[index].LightIntensity = (int)math.min(150 - health, 100);
                         timeUntilSirenSwitch.Value = health / 100;
-                        uint team = VehicleSirenOff.Offset(group);
-                        _entityFunctions.SwapEntityGroup<VehicleDescriptor>(new EGID(entityIDs[i], group), VehicleSirenOn.BuildGroup + (uint)team);
+
+                        var entityID = entityIDs[index];
+                        offGroupfilter.Remove(entityID);
+                        onGroupFilter.Add(entityID, index);
+                        i--;
                     }
                 }
             }
@@ -37,6 +45,7 @@ namespace Logic.SveltoECS
 
         public string name => nameof(SwitchSirenLightOnSystem);
         
-        readonly IEntityFunctions _entityFunctions;
+        EntityFilterCollection _entityFilterCollectionOff;
+        EntityFilterCollection _entityFilterCollectionOn;
     }
 }

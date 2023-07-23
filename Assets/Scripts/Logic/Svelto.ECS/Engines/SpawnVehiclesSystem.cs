@@ -1,16 +1,10 @@
 using Svelto.ECS;
-using Svelto.ECS.Experimental;
 using Unity.Mathematics;
 using Random = UnityEngine.Random;
 
 namespace Logic.SveltoECS
 {
-//    public static class VechilesFilterIds
-//    {
-//        internal static readonly FilterContextID VehicleFilterContext = FilterContextID.GetNewContextID();
-//    }
-//
-    public class SpawnVehiclesSystem: IQueryingEntitiesEngine, IStepEngine<float>
+    public class SpawnVehiclesSystem: IQueryingEntitiesEngine, IStepEngine<float>, IReactOnAddEx<PositionDC>
     {
         public SpawnVehiclesSystem(IEntityFactory entityFactory)
         {
@@ -24,12 +18,12 @@ namespace Logic.SveltoECS
 
             for (uint i = 0; i < maxTeamCount; i++)
             {
-                if (entitiesDB.Count<TeamDC>(VehicleSirenOff.BuildGroup + i) +  entitiesDB.Count<TeamDC>(VehicleSirenOn.BuildGroup + i)>= maxVehicleCount)
+                if (entitiesDB.Count<TeamDC>(VehicleTag.BuildGroup + i) >= maxVehicleCount)
                     continue;
-                
-                var egid = new EGID((uint)Count++, VehicleSirenOff.BuildGroup + i);
-                var init = _entityFactory.BuildEntity<VehicleDescriptor>(egid);
 
+                var egid = new EGID((uint)Count++, VehicleTag.BuildGroup + i);
+                var init = _entityFactory.BuildEntity<VehicleDescriptor>(egid);
+                
                 init.Init(
                     new TeamDC()
                     {
@@ -49,14 +43,32 @@ namespace Logic.SveltoECS
         }
 
         public void Ready()
-        { }
+        {
+            var filter = entitiesDB.GetFilters();
+
+            _filterOff = filter.CreatePersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOff);
+            filter.CreatePersistentFilter<PositionDC>(VechilesFilterIds.VehiclesWithSirenOn);
+        }
+        
+        //Entities can be added in to filters only after they are inserted in the database. Exploiting the add callback is a common pattern to 
+        //solve the issue
+        public void Add((uint start, uint end) rangeOfEntities, in EntityCollection<PositionDC> entities, ExclusiveGroupStruct groupID)
+        {
+            var filter = _filterOff.GetOrCreateGroupFilter(groupID);
+            var (_, entityIDs, _) = entities;
+            for (var index = rangeOfEntities.start; index < rangeOfEntities.end; index++)
+            {
+                filter.Add(entityIDs[index], index);
+            }
+        }
 
         public EntitiesDB entitiesDB { get; set; }
 
         public string name => nameof(SpawnVehiclesSystem);
 
         readonly IEntityFactory _entityFactory;
-        
+
         static int Count = 0;
+        EntityFilterCollection _filterOff;
     }
 };
